@@ -268,9 +268,21 @@ orden ((a,b):xs) = if a < (b * 3) then (a, b) : orden xs else orden xs
 -- i) 'pares', que dada una lista de enteros, devuelve la lista
 -- de los elementos pares
 
+pares :: [Int] -> [Int]
+pares [] = []
+pares (x:xs) = if x `mod` 2 == 0 then x : pares xs else pares xs
+
 -- j) 'letras', que dada una lista de caracteres, devuelve la
 -- lista de aquellos que son letras (minúsculas o mayúsculas)
+
+letras :: [Char] -> [Char]
+letras [] = []
+letras (x:xs) = if (x >= 'A' && x <= 'Z') || (x >= 'a' && x <= 'z') then x : letras xs else letras xs
 
 -- k) 'masDe', que dada una lista de listas 'xss' y un
 -- número 'n', devuelve la lista de aquellas listas de 'xss'
 -- con longitud mayor que 'n' -}
+
+masDe :: [[a]] -> Int -> [[a]]
+masDe [] n = []
+masDe (x:xs) n = if lengthh x > n then x : masDe xs n else masDe xs n
