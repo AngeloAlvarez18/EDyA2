@@ -12,8 +12,8 @@ type Texto = String
 -}
 
 lengthh :: [a] -> Float
-lengthh []        =  0
-lengthh (_:l)     =  1 + lengthh l
+lengthh [] =  0
+lengthh (_:l) =  1 + lengthh l
 
 --frecuency :: Char -> Texto -> Float
 frecuency c s = (lengthh x) / (lengthh s) where x = [a | a <- s, a == c]
@@ -76,11 +76,18 @@ subconjuntos (x:xs) = map (x:) (subconjuntos xs) ++ subconjuntos xs
  Por ejemplo: intercala 1 [2,3]  ==  [[1,2,3],[2,1,3],[2,3,1]]
 -}
 
+--ponerEnIndice :: Int -> [Int] -> Int -> [Int]
+ponerEnIndice a xs 0 = a : xs
+ponerEnIndice a (x:xs) i = x : ponerEnIndice a xs (i - 1)
 
-intercala :: a -> [a] -> [[a]]
-intercala x ys = 
+-- ponerEnIndice 1 [2,3] 2 = 2 : ponerEnIndice 1 [3] 1
+-- 2 : 3 : ponerEnIndice 1 [] 0
+-- 2 : 3 : 1 : []
 
-1 [2,3] = 
+
+--intercala :: a -> [a] -> [[a]]
+intercala x ys = [ponerEnIndice x ys i | i <- [0.. (length ys)]]
+
 
 {- 
   Definir una función permutaciones que dada una lista calcule todas las permutaciones
@@ -89,5 +96,22 @@ intercala x ys =
   Por ejemplo: permutaciones "abc" = ["abc","bac","cba","bca","cab","acb"]
 -}                  
 
-permutaciones :: [a] -> [[a]]
-permutaciones = undefined 
+"abc" "bac" "bca" "acb" "cab"
+
+"abc" -> "ba"
+
+sacarElemento 0 (x:xs) = xs
+sacarElemento i (x:xs) = x : sacarElemento (i-1) xs
+
+tomarElemento 0 (x:xs) = x
+tomarElemento i (x:xs) = tomarElemento (i-1) xs
+
+listaSinElemento xs = [sacarElemento i xs | i <- [0..(length xs)-1]]
+
+permutacionesRepetidas [] ys = []
+permutacionesRepetidas (x:xs) (y:ys) = intercala x y : permutacionesRepetidas xs ys
+
+permutacionesAux [] = []
+permutacionesAux (x:xs) = x ++ permutacionesAux xs
+
+permutaciones xs = unique (permutacionesAux (permutacionesRepetidas xs (listaSinElemento xs)))
