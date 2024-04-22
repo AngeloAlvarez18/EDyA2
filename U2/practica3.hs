@@ -98,7 +98,7 @@ borrar (L (x:xs) p) = L (x : caracteres (borrar (L xs (p-1)))) (p-1)
 
 data CList a = EmptyCL | CUnit a | Consnoc a (CList a) a deriving Show
 
-headCL :: CList a -> Maybe a
+--headCL :: CList a -> Maybe a
 headCL EmptyCL = Nothing
 headCL (CUnit a) = Just (CUnit a)
 headCL (Consnoc a _ _) = Just (CUnit a)
@@ -107,3 +107,11 @@ headCL (Consnoc a _ _) = Just (CUnit a)
 -- tailCL EmptyCL = Nothing
 -- tailCL (CUnit a) = Just (CUnit a)
 -- tailCL (Consnoc _ _ a) = Just (Consnoc )
+
+isEmptyCL :: CList a -> Bool
+isEmptyCL EmptyCL = True
+isEmptyCL a = False
+
+isCUnit :: CList a -> Bool
+isCUnit (CUnit a) = True
+isCUnit a = False
