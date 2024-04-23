@@ -159,17 +159,26 @@ eval (Div a b) = (eval a) `div` (eval b)
 charToInt :: Char -> Int
 charToInt c = ord c - ord '0'
 
---parseRPN :: String -> Exp
--- parseRPN "" = Lit 0
--- parseRPN (x:xs) | (x >= '0') && (x <= '9') = Lit (charToInt x) : parseRPN xs
---                 | x == '+' = 
---parseRPN (x:xs) = 
 
-"8 5 3 - 3 * +"
-Lit 8 : parse "5 3 - 3 * +"
-Lit 8 : Lit 5 : parse "3 - 3 * +"
-Lit 8 : Lit 5 : Lit 3 : parse "- 3 * +"
-Lit 8 : (Sub Lit 5 Lit 3) : parse "3 * +"
-Lit 8 : (Sub Lit 5 Lit 3) : Lit 3 : parse "* +"
-Lit 8 : Prod (Sub Lit 5 Lit 3) Lit 3 : parse "+"
-Add (Lit 8) (Prod (Sub Lit 5 Lit 3) Lit 3)
+
+--parseRPN :: String -> Exp
+parseAux (x:xs) [y] = y
+parseAux (x:xs) [] | (x >= '0') && (x <= '9') = parseAux xs (Lit (charToInt x) : [])
+                   | otherwise = Lit 0
+parseAux (x:xs) (y:ys) | (x >= '0') && (x <= '9') = parseAux xs (Lit (charToInt x) : (y:ys))
+                | x == '+' = parseAux xs ((Add y (head ys)): tail ys)
+                | x == '-' = parseAux xs ((Sub y (head ys)): tail ys)
+                | x == '*' = parseAux xs ((Prod y (head ys)) : tail ys)
+                | x == '/' = parseAux xs ((Div y (head ys)): tail ys)
+                | otherwise = parseAux xs (y:ys)
+
+parseRPN xs = parseAux xs []
+
+-- "8 5 3 - 3 * +"
+-- Lit 8 : parse "5 3 - 3 * +" -> [8] : parse
+-- Lit 8 : Lit 5 : parse "3 - 3 * +" -> [8, 5] : parse
+-- Lit 8 : Lit 5 : Lit 3 : parse "- 3 * +" -> 
+-- Lit 8 : (Sub Lit 5 Lit 3) : parse "3 * +"
+-- Lit 8 : (Sub Lit 5 Lit 3) : Lit 3 : parse "* +"
+-- Lit 8 : Prod (Sub Lit 5 Lit 3) Lit 3 : parse "+"
+-- Add (Lit 8) (Prod (Sub Lit 5 Lit 3) Lit 3)
