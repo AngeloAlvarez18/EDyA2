@@ -1,6 +1,7 @@
 module Pract3 where
 
 import Data.List
+import Data.Char
 
 -- 1. El modelo de color RGB es un modelo aditivo que tiene al rojo, verde y azul como colores primarios. Cualquier
 -- otro color se expresa en terminos de los porcentajes de cada uno estos tres colores que es necesario combinar
@@ -98,15 +99,26 @@ borrar (L (x:xs) p) = L (x : caracteres (borrar (L xs (p-1)))) (p-1)
 
 data CList a = EmptyCL | CUnit a | Consnoc a (CList a) a deriving Show
 
---headCL :: CList a -> Maybe a
+headCL :: CList a -> Maybe a
 headCL EmptyCL = Nothing
-headCL (CUnit a) = Just (CUnit a)
-headCL (Consnoc a _ _) = Just (CUnit a)
+headCL (CUnit a) = Just a
+headCL (Consnoc a _ _) = Just a
 
--- tailCL :: CList a -> Maybe a
+-- tailCL :: CList a -> Maybe (CList a)
 -- tailCL EmptyCL = Nothing
--- tailCL (CUnit a) = Just (CUnit a)
--- tailCL (Consnoc _ _ a) = Just (Consnoc )
+-- tailCL (CUnit a) = EmptyCL
+--tailCL (Consnoc a b c) = 
+
+-- Queremos hacer la lista [1,2,3,4,5], empezando de la lista []
+-- a = EmptyCL -> []
+-- b = CUnit 1 -> [1]
+-- c = Consnoc 1 EmptyCL 2 -> [1,2]
+-- d = Consnoc 1 (CUnit 2) 3 -> [1, 2, 3]
+-- e = Consnoc 1 (Consnoc 2 (EmptyCL) 3) 4 -> [1, 2, 3, 4]
+-- f = Consnoc 1 (Consnoc 2 (CUnit 5) 3) 4 -> [1, 2, 3, 4, 5]
+
+-- Consnoc 2 (Consnoc 3 (CUnit 5) 3) 4
+-- tail f -> Consnoc 2 (Consnoc 3 (EmptyCL) 4) 5
 
 isEmptyCL :: CList a -> Bool
 isEmptyCL EmptyCL = True
@@ -115,3 +127,49 @@ isEmptyCL a = False
 isCUnit :: CList a -> Bool
 isCUnit (CUnit a) = True
 isCUnit a = False
+
+-- b) Definir una funcion reverseCL que toma una CList y devuelve su inversa
+
+reverseCL :: CList a -> Maybe (CList a)
+reverseCL (EmptyCL) = Nothing
+reverseCL (CUnit a) = Just (CUnit a)
+
+
+
+-- 4. Defina un evaluador eval :: Exp → Int para el siguiente tipo algebraico:
+-- data Exp = Lit Int | Add Exp Exp | Sub Exp Exp | Prod Exp Exp | Div Exp Exp
+
+data Exp = Lit Int | Add Exp Exp | Sub Exp Exp | Prod Exp Exp | Div Exp Exp deriving Show
+
+eval :: Exp -> Int
+eval (Lit a) = a
+eval (Add a b) = (eval a) + (eval b)
+eval (Sub a b) = (eval a) - (eval b)
+eval (Prod a b) = (eval a) * (eval b)
+eval (Div a b) = (eval a) `div` (eval b)
+
+
+-- 5) a) Defina una funcion parseRPN :: String → Exp que, dado un string que representa una expresion escrita en
+-- RPN, construya un elemento del tipo Exp presentado en el ejercicio 4 correspondiente a la expresion dada. Por
+-- ejemplo:
+-- parseRPN “8 5 3 − 3 ∗ +” = Add (Lit 8) (Prod (Sub (Lit 5) (Lit 3)) (Lit 3))
+-- Ayuda: para implementar parseRPN puede seguir un algoritmo similar al presentado anteriormente. En lugar
+-- de evaluar las expresiones, debe construir un valor de tipo Exp.
+
+charToInt :: Char -> Int
+charToInt c = ord c - ord '0'
+
+--parseRPN :: String -> Exp
+-- parseRPN "" = Lit 0
+-- parseRPN (x:xs) | (x >= '0') && (x <= '9') = Lit (charToInt x) : parseRPN xs
+--                 | x == '+' = 
+--parseRPN (x:xs) = 
+
+"8 5 3 - 3 * +"
+Lit 8 : parse "5 3 - 3 * +"
+Lit 8 : Lit 5 : parse "3 - 3 * +"
+Lit 8 : Lit 5 : Lit 3 : parse "- 3 * +"
+Lit 8 : (Sub Lit 5 Lit 3) : parse "3 * +"
+Lit 8 : (Sub Lit 5 Lit 3) : Lit 3 : parse "* +"
+Lit 8 : Prod (Sub Lit 5 Lit 3) Lit 3 : parse "+"
+Add (Lit 8) (Prod (Sub Lit 5 Lit 3) Lit 3)
