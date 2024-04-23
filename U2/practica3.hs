@@ -156,23 +156,32 @@ eval (Div a b) = (eval a) `div` (eval b)
 -- Ayuda: para implementar parseRPN puede seguir un algoritmo similar al presentado anteriormente. En lugar
 -- de evaluar las expresiones, debe construir un valor de tipo Exp.
 
+
 charToInt :: Char -> Int
 charToInt c = ord c - ord '0'
 
-
-
---parseRPN :: String -> Exp
-parseAux (x:xs) [y] = y
+parseAux :: String -> [Exp] -> Exp
+parseAux "" [] = Lit 0
+parseAux "" (y:ys) = y
 parseAux (x:xs) [] | (x >= '0') && (x <= '9') = parseAux xs (Lit (charToInt x) : [])
                    | otherwise = Lit 0
 parseAux (x:xs) (y:ys) | (x >= '0') && (x <= '9') = parseAux xs (Lit (charToInt x) : (y:ys))
-                | x == '+' = parseAux xs ((Add y (head ys)): tail ys)
-                | x == '-' = parseAux xs ((Sub y (head ys)): tail ys)
-                | x == '*' = parseAux xs ((Prod y (head ys)) : tail ys)
-                | x == '/' = parseAux xs ((Div y (head ys)): tail ys)
+                | x == '+' = parseAux xs ((Add (head ys) y): tail ys)
+                | x == '-' = parseAux xs ((Sub (head ys) y): tail ys)
+                | x == '*' = parseAux xs ((Prod (head ys) y) : tail ys)
+                | x == '/' = parseAux xs ((Div (head ys) y): tail ys)
                 | otherwise = parseAux xs (y:ys)
 
+parseRPN :: String -> Exp
 parseRPN xs = parseAux xs []
+
+-- parseRPN "10 25 +" = parseAux "10 25 +" []
+-- = parseAux " 25 +" (Lit 10 : [])
+-- = parseAux "25 +" (Lit 10 : [])
+-- = parseAux " +" (Lit : 25 : Lit 10 : [])
+-- = parseAux "+" (Lit : 25 : Lit 10 : [])
+-- = parseAux "" (Add Lit 10 Lit 25 : [])
+
 
 -- "8 5 3 - 3 * +"
 -- Lit 8 : parse "5 3 - 3 * +" -> [8] : parse
@@ -182,3 +191,23 @@ parseRPN xs = parseAux xs []
 -- Lit 8 : (Sub Lit 5 Lit 3) : Lit 3 : parse "* +"
 -- Lit 8 : Prod (Sub Lit 5 Lit 3) Lit 3 : parse "+"
 -- Add (Lit 8) (Prod (Sub Lit 5 Lit 3) Lit 3)
+
+-- b) Defina una funcion evalRPN :: String → Int para evaluar expresiones aritmeticas escritas en RPN. Por ejemplo:
+-- evalRPN “8 5 3 − 3 ∗ +” = 14
+-- Ayuda: use las funciones parseRPN y eval definidas anteriormente.
+
+evalRPN :: String -> Int
+evalRPN xs = eval (parseRPN xs)
+
+-- 6) a) Considere el evaluador eval :: Exp → Int del ejercicio 4. ¿Como maneja los errores de division por 0?
+-- Tira la siguiente excepcion: Exception: divide by zero
+
+--b) Defina un evaluador seval :: Exp → Maybe Int para controlar los errores de division por 0
+
+seval :: Exp -> Maybe Int
+seval (Lit a) = Just a
+seval (Add a b) = Just ((eval a) + (eval b))
+seval (Sub a b) = Just ((eval a) - (eval b))
+seval (Prod a b) = Just ((eval a) * (eval b))
+seval (Div a (Lit 0)) = Nothing
+seval (Div a b) = Just ((eval a) `div` (eval b))
