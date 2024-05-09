@@ -1,0 +1,145 @@
+Practica 5
+
+1. Las listas finitas pueden especificarse como un TAD con los constructores:
+• nil: Construye una lista vacia.
+• cons: Agrega un elemento a la lista.
+y las siguientes operaciones:
+• null : Nos dice si la lista es vacia o no.
+• head: Devuelve el primer elemento de la lista.
+• tail: Devuelve todos los elementos de la lista menos el primero.
+
+a) Dar una especificacion algebraica del TAD listas finitas.
+
+tad List (A:Set) where
+    import Bool
+    nil : List A
+    cons : A -> List A -> List A
+    null : List A -> Bool
+    head : List A -> A
+    tail : List A -> List A
+
+null nil = True
+null (cons a xs) = False
+head nil = nil 
+head (cons a xs) = a
+tail nil = nil
+tail (cons a xs) = xs
+
+b) Dar una especificacion tomando como modelo las secuencias.
+
+nil = <>
+cons x <x1, x2, ..., xn> = <x, x1, x2, ..., xn> Si n = 0 es la lista vacia
+null <x1, ..., xn> = True  SI n = 0
+null <x1, ..., xn> = False en otro caso
+head <x1, ..., xn> = x1
+tail <x1, x2, ..., xn> = <x2, ..., xn>
+
+c) Asumiendo que A es un tipo con igualdad, especificar una funcion inL : List A → A → Bool tal que inL ls x =
+true si y solo si x es un elemento de ls.
+
+inL nil x = False
+inL (cons a xs) x = if a == x then True else inL xs x
+
+
+d) Especificar una funcion que elimina todas las ocurrencias de un elemento dado.
+
+eliminarL nil x = nil
+eliminarL (cons a xs) x = if a == x then eliminarL xs x 
+                            else cons a (eliminarL xs x)
+
+
+2. Dado el TAD pilas, con las siguientes operaciones:
+• empty: Construye una pila inicialmente vacia.
+• push: Agrega un elemento al tope de la pila.
+• isEmpty: Devuelve verdadero si su argumento es una pila vacia, falso en caso contrario.
+• top: Devuelve el elemento que se encuentra al tope de la pila.
+• pop: Saca el elemento que se encuentra al tope de la pila
+Dar una especificacion algebraica del TAD pilas y una especificacion tomando como modelo las secuencias
+
+tad Pila (A:Set) where
+    import Bool
+    empty : Pila A
+    push : A -> Pila A -> Pila A
+    isEmpty : Pila A -> Bool
+    top : Pila A -> A
+    pop : Pila A -> Pila A
+
+isEmpty empty = True
+isEmpty push a b = False
+top push a b = a
+pop push a b = b
+
+Modelos: 
+
+empty = <>
+push x <x1, ..., xn> = <x, x1, ..., xn>
+isEmpty <x1, ..., xn> = True si n = 0
+isEmpty <x1, ..., xn> = False en otro caso
+top <x1, ..., xn> = <> si n = 0
+top <x1, ..., xn> = x1 en otro caso
+pop <x1, x2, ..., xn> = <> si n = 0
+pop <x1, x2, ..., xn> = <x2, ..., xn> en otro caso
+
+3. Asumiendo que A es un tipo con igualdad, completar la siguiente especificacion algebraica del TAD conjunto.
+tad Conjunto (A : Set) where
+import Bool
+vacıo : Conjunto A
+insertar : A → Conjunto A → Conjunto A
+borrar : A → Conjunto A → Conjunto A
+esVacıo : Conjunto A → Bool
+union : Conjunto A → Conjunto A → Conjunto A
+interseccion : Conjunto A → Conjunto A → Conjunto A
+resta : Conjunto A → Conjunto A → Conjunto A
+insertar x (insertar x c) = insertar x c
+insertar x (insertar y c) = insertar y (insertar x c)
+...
+¿Que pasarıa si se agregase una funcion choose : Conjunto A → A, tal que choose (insertar x c) = x ?
+
+insertar x (insertar x c) = insertar x c
+insertar x (insertar y c) = insertar y (insertar x c)
+insertar x vacio = insertar x vacio
+
+borrar x vacio = insertar x vacio
+borrar x (insertar x c) = c
+borrar x (insertar y c) = insertar y (borrar x c)
+
+esVacio vacio = True
+esVacio insertar x y = False
+
+union vacio vacio = vacio
+union vacio _ = _
+union _ vacio = _
+union (insertar a b) (insertar x y) = insertar a (union b (insertar x y))
+
+interseccion vacio vacio = vacio
+interseccion vacio _ = _
+interseccion _ vacio = _
+interseccion (insertar a b) c = if pertenece a c then insertar a (interseccion b c)
+                                else interseccion b c
+
+resta vacio vacio = vacio
+resta _ vacio = _
+resta (insertar a b) c = if pertenece a c then resta b c
+                        else insertar a (resta b c)
+
+ 
+4. El TAD priority queue es una cola en la cual cada elemento tiene asociado un valor que es su prioridad (a dos
+elementos distintos le corresponden prioridades distintas). Los valores que definen la prioridad de los elementos
+pertenecen a un conjunto ordenado. Las siguientes son las operaciones soportadas por este TAD:
+
+• vacıa: Construye una priority queue vacıa.
+• poner: Agrega un elemento a una priority queue con una prioridad dada.
+• primero: Devuelve el elemento con mayor prioridad de una priority queue.
+• sacar: Elimina de una priority queue el elemento con mayor prioridad.
+• esVacıa: Determina si una priority queue es vacıa.
+• union: Une dos priority queues.
+Dar una especificacion algebraica del TAD priority queue y una especificacion tomando como modelo los conjuntos
+
+tad PQueue (A:set, B: Ordered Set) where
+    import Bool
+    vacia : PQueue A B
+    poner : A -> B -> PQueue A B
+    primero : PQueue A B -> A
+    sacar : PQueue A B -> PQueue A B
+    esVacia : PQueue A B -> Bool
+    union : PQueue A B -> PQueue A B -> PQueue A B

@@ -89,3 +89,15 @@ arbolMenores (B l x t2@(B l2 b r2)) a | x > a = arbolMenores l a
 
 splitBST ::  Ord a => BST a -> a -> (BST a, BST a)
 splitBST t a = (arbolMenores t a, arbolMayores t a)
+
+-- 4. join :: Ord a ⇒ BST a → BST a → BST a, que una los elementos dos arboles bst en uno
+
+inorder :: Ord a => BST a -> [a]
+inorder Empty = []
+inorder (B Empty x Empty) = x : []
+inorder (B l x r) = inorder l ++ [x] ++ inorder r
+
+joinBST :: Ord a => BST a -> BST a -> BST a
+joinBST t1 Empty = t1
+joinBST Empty t2 = t2
+joinBST t1@(B l1 a r1) t2@(B l2 b r2) = insertBST (joinBST t1 l2) b
