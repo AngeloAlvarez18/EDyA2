@@ -143,3 +143,23 @@ tad PQueue (A:set, B: Ordered Set) where
     sacar : PQueue A B -> PQueue A B
     esVacia : PQueue A B -> Bool
     union : PQueue A B -> PQueue A B -> PQueue A B
+
+poner a b vacia = poner (a, b) vacia
+poner a b (poner (a, b) e) = poner (a, b) e
+poner a b pq@(poner (c, d) e) | existe a pq = insertar a b (eliminar a pq)
+                              | b = d = poner (a, b) e
+                              | b < d = poner (a, b) (poner (c,d) e)
+                              | b > d  = poner (c, d) (poner a b e)
+
+primero vacia = undefined
+primero poner (a, b) c = a
+
+sacar vacia = vacia
+sacar poner (a, b) c = c
+
+esVacia vacia = True
+esVacia poner (a, b) _ = False
+
+union vacia _ = _
+union _ vacia = _
+union (poner (a, b) c) poner (x, y) z = union c (poner a b )
