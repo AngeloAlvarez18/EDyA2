@@ -144,22 +144,175 @@ tad PQueue (A:set, B: Ordered Set) where
     esVacia : PQueue A B -> Bool
     union : PQueue A B -> PQueue A B -> PQueue A B
 
-poner a b vacia = poner (a, b) vacia
-poner a b (poner (a, b) e) = poner (a, b) e
-poner a b pq@(poner (c, d) e) | existe a pq = insertar a b (eliminar a pq)
-                              | b = d = poner (a, b) e
-                              | b < d = poner (a, b) (poner (c,d) e)
-                              | b > d  = poner (c, d) (poner a b e)
+existe a b vacia = False
+existe a b (poner c d e) = if a == c && b == d then True else existe a b e
+
+poner a b vacia = poner a b vacia
+poner a b (poner a b e) = poner a b e
+poner a b pq@(poner c d e) | existe a pq = insertar a b (eliminar a pq)
+                           | b == d = poner a b e
+                           | b < d = poner a b (poner c d e)
+                           | b > d = poner c d (poner a b e)
+
 
 primero vacia = undefined
-primero poner (a, b) c = a
+primero poner a b c = a
 
 sacar vacia = vacia
-sacar poner (a, b) c = c
+sacar poner a b c = c
 
 esVacia vacia = True
-esVacia poner (a, b) _ = False
+esVacia poner a b _ = False
 
 union vacia _ = _
 union _ vacia = _
-union (poner (a, b) c) poner (x, y) z = union c (poner a b )
+union (poner a b c) poner x y z = poner a b (union c (poner x y z))
+
+
+Especificacion por modelos usando conjuntos:
+
+vacia = {}
+
+poner x y {} = {(a, b)}
+poner x y pq@{(a1, b1), (a2, b2), ..., (an, bn)} | (x, y) ∈ pq = pq
+                                                 | y == b1 = {(x, y), (a2, b2), ..., (an, bn)}
+                                                 | y < b1 = {(x, y), (a1, b1), (a2, b2), ..., (an, bn)}
+                                                 | b > d = {(a1, b1)} U poner x y pq
+
+primero {} = undefined
+primero {(a1, b1), ..., (an, bn)} = ai
+                                    |
+                                    Siendo bi la prioridad más alta
+                                    |
+sacar {} = {}
+sacar {(a1, b1), ..., (an, bn)} = {(a1, b1), ..., (ai-1, bi-1), (ai+1, bi+1), ..., (an, bn)}
+
+union {(a1, b1), ..., (an, bn)} {} = {}
+union {} {(a1, b1), ..., (an, bn)} = pq
+union pq {} = pq
+union pq1@{(a1, b1), ..., (an, bn)} pq2@{(x1. y1), ..., (xn, yn)} = poner a1 b1 (union (pq - {(a1, b1)}), pq2)
+
+
+5. Agregar a la siguiente definicion del TAD arboles balanceados una especificacion algebraica para las operaciones
+size y expose:
+tad BalT (A : Ordered Set) where
+import Maybe
+empty : BalT A
+join : BalT A → Maybe A → BalT A → BalT A
+size : BalT A → N
+expose : BalT A → Maybe (BalT A, A, BalT A)
+• La operacion join toma un arbol L, un elemento opcional, y un arbol R. Si L y R son arboles de busqueda
+balanceados tales que todos los elementos de L sean menores que todos los elementos de R y el elemento
+opcional es mas grande que los de L y menor que los de R, entonces join crea un nuevo arbol de busqueda
+balanceado.
+• Las operaciones empty y size son obvias.
+• La operacion expose toma un arbol T y nos da Nothing si el arbol esta vacıo, y en otro caso nos devuelve
+un arbol izquierdo, un elemento raız, y un arbol derecho de un arbol de busqueda que contiene todos los
+elementos de T.
+Notar que join no es simplemente un constructor sino que tiene que realizar cierto trabajo para devolver un arbol
+balanceado. Debido a esto es conveniente especificar expose por casos sobre su resultado
+
+size empty = 0
+size (join L n R) = 1 + size(L) + size(R)
+
+expose empty = Nothing
+expose (L n R) = 
+
+
+6. Demostrar que (uncurry zip) ◦ unzip = id, siendo:
+zip :: [a] → [b] → [(a, b)]
+zip [ ] ys = [ ]
+zip (x : xs) [ ] = [ ]
+zip (x : xs) (y : ys) = (x , y) : zip xs ys
+unzip :: [(a, b, )] → ([a ], [b ])
+unzip [ ] = ([ ], [ ])
+unzip ((x , y) : ps) = (x : xs, y : ys)
+where (xs, ys) = unzip ps
+
+sea P = (uncurry zip)  . unzip xs = id
+
+Nuestra HI es que si P(xs) entonces P(x:xs)
+
+Caso []
+
+(uncurry zip) . unzip []
+<unzip []>
+uncurry zip ([], [])
+<uncurry zip ([], [])>
+[]
+
+Caso xs
+
+(uncurry zip) . unzip (x, y):ps
+<unzip .2> 
+uncurry zip (x:xs, y:ys) where (xs, ys) = unzip ps
+<uncurry zip .3> 
+(x, y): uncurry zip (xs, ys)
+<where>
+(x, y) : uncurry zip (unzip ps)
+<H.I> 
+(x, y) : ps
+
+Especificamos uncurry zip
+
+uncurry zip :: ([a], [b]) -> [(a, b)]
+uncurry zip (x:xs, []) = []
+uncurry zip ((x:xs), (y:ys)) = (x, y) : uncurry zip (xs, ys)
+
+
+7.
+Demostrar que sum xs ⩽ length xs ∗ maxl xs, sabiendo que xs es una lista de numeros naturales y que maxl y sum
+se definen
+maxl [] = 0 sum [] = 0
+maxl (x:xs) = x ‘max‘ maxl xs sum (x:xs) = x + sum xs
+
+
+Sea P = sum xs <= length xs * maxl xs (HI)
+
+Queremos probar que si P(xs) entonces P(x:xs)
+
+Caso []
+
+sum [] = 0 <= length [] * maxl [] = 0 * 0 = 0
+
+Caso (x:xs)
+
+length (x:xs) * maxl (x:xs)
+<length (x:xs)> 
+(1 + length xs) * maxl (x:xs)
+<maxl (x:xs)>
+(1 + length xs) * (x `max` maxl xs)
+
+Dividimos en dos casos
+
+1) <x es el max> 
+
+(1 + length xs) * x = x + length xs * x >= x + sum xs = sum (x:xs)
+
+2) <maxl es el max>
+
+(1 + length xs) * maxl xs = maxl xs + length xs * maxl xs >= x + length xs * maxl xs 
+<HI>
+x + length xs * maxl xs  >= x + sum xs = sum (x:xs)
+
+
+
+8. Dado el siguiente tipo de datos
+data Arbol a = Hoja a | Nodo a (Arbol a) (Arbol a)
+
+a) Dar el tipo y definir la funci´on size que calcula la cantidad de elementos que contiene un (Arbol a).
+b) Demostrar la validez de la siguiente propiedad: ∀t ∈ (Arbol a). ∃k ∈ N. size t = 2 k + 1
+c) Dar el tipo y definir la funci´on mirror que dado un ´arbol devuelve su ´arbol espejo.
+d) Demostrar la validez de la siguiente propiedad: mirror ◦ mirror = id
+e) Considerando las siguientes funciones:
+hojas :: Arbol a → Int
+hojas (Hoja x ) = 1
+hojas (Nodo x t1 t2) = hojas t1 + hojas t2
+altura :: Arbol a → Int
+altura (Hoja x ) = 1
+altura (Nodo x t1 t2) = 1 + (altura t1 ‘max‘ altura t2)
+Demostrar que para todo ´arbol finito t se cumple que hojas t < 2^(altura t)
+
+
+
+
