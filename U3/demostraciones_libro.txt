@@ -1,0 +1,89 @@
+
+replicate :: Int -> a -> [a]
+replicate 0 _ = []
+replicate n x = x : replicate (n-1) x
+
+length [] = 0
+length (x:xs) = 1 + length xs
+
+Queremos probar que length (replicate n x) = n (HI)
+
+Caso n = 0
+
+length (replicate 0 _) 
+< replicate 1.>
+length []
+<length 1.>
+0
+
+caso n > 0
+length (replicate (n+1) x)
+< replicate 2.>
+length (x : replicate n x)
+< length 2.>
+1 + length (replicate n x)
+<HI>
+1 + n = n + 1
+
+reverse :: [x] -> [x]
+reverse [] = []
+reverse (x:xs) = reverse xs ++ x
+
+[] ++ xs = xs
+(x:xs) ++ ys = x : (xs ++ ys)
+
+Queremos probar que reverse (reverse xs) = xs (HI)
+
+Caso []
+
+reverse (reverse [])
+< reverse 1.>
+reverse []
+<reverse 1.>
+[]
+
+Caso (x:xs)
+
+reverse (reverse (x:xs))
+< reverse 2.>
+reverse (reverse xs ++ [x])
+<lema ?>
+reverse [x] ++ reverse (reverse xs)
+< reverse [x]>
+[x] ++ reverse (reverse xs)
+<HI>
+[x] ++ xs
+< def. list>
+(x : []) ++ xs
+< ++ 2.>
+x : ([] ++ xs)
+< ++ 1.>
+(x : xs)
+
+
+reverse (xs ++ ys) = reverse ys ++ reverse xs  (HI)
+
+Caso []
+
+reverse ([] ++ ys) 
+< ++ 1.>
+reverse ys
+< def. : >
+reverse (ys : [])
+< reverse 2. >
+reverse ys ++ []
+< reverse 1. >
+reverse ys ++ reverse []
+
+Caso (x:xs)
+
+reverse (x:xs ++ ys)
+< ++ 2. >
+reverse (x : (xs ++ ys))
+< reverse 2. >
+reverse (xs ++ ys) ++ [x]
+< HI >
+reverse ys ++ reverse xs ++ [x]
+< reverse 2. >
+reverse ys ++ reverse (x:xs)
+

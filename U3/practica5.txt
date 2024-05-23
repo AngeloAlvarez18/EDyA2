@@ -312,7 +312,3 @@ altura :: Arbol a → Int
 altura (Hoja x ) = 1
 altura (Nodo x t1 t2) = 1 + (altura t1 ‘max‘ altura t2)
 Demostrar que para todo ´arbol finito t se cumple que hojas t < 2^(altura t)
-
-
-
-
