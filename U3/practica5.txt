@@ -263,9 +263,11 @@ uncurry zip ((x:xs), (y:ys)) = (x, y) : uncurry zip (xs, ys)
 7.
 Demostrar que sum xs ⩽ length xs ∗ maxl xs, sabiendo que xs es una lista de numeros naturales y que maxl y sum
 se definen
-maxl [] = 0 sum [] = 0
-maxl (x:xs) = x ‘max‘ maxl xs sum (x:xs) = x + sum xs
+maxl [] = 0 
+maxl (x:xs) = x ‘max‘ maxl xs
 
+sum (x:xs) = x + sum xs
+sum [] = 0
 
 Sea P = sum xs <= length xs * maxl xs (HI)
 
@@ -300,15 +302,269 @@ x + length xs * maxl xs  >= x + sum xs = sum (x:xs)
 8. Dado el siguiente tipo de datos
 data Arbol a = Hoja a | Nodo a (Arbol a) (Arbol a)
 
-a) Dar el tipo y definir la funci´on size que calcula la cantidad de elementos que contiene un (Arbol a).
-b) Demostrar la validez de la siguiente propiedad: ∀t ∈ (Arbol a). ∃k ∈ N. size t = 2 k + 1
-c) Dar el tipo y definir la funci´on mirror que dado un ´arbol devuelve su ´arbol espejo.
+a) Dar el tipo y definir la funcion size que calcula la cantidad de elementos que contiene un (Arbol a).
+
+size :: Arbol a -> Int
+size (Hoja a) = 1
+size (Nodo a l r) = 1 + (size l) + (size r)
+
+b) Demostrar la validez de la siguiente propiedad: ∀t ∈ (Arbol a). ∃k ∈ N. size t = 2 k + 1 -> P
+
+Caso Hoja a
+
+size (Hoja a) = 1 = 2 * 0 + 1 , k = 0
+
+Probemos que si se cumple P(l) y P(r) -> P(Nodo a l r)
+
+Caso (Nodo a l r)
+
+size (Nodo a l r) = 1 + (size l) + (size r)
+< HI > Existen k' y h tq
+1 + (2k' + 1) + (2h + 1) = 2(k' + h) + 3 
+< k = k' + h >
+2k + 3 = 2(k + 1) + 1
+
+Por lo que ∃k ∈ N , donde k = k' + h t.q se cumple P
+
+c) Dar el tipo y definir la funcion mirror que dado un arbol devuelve su arbol espejo.
+
+mirror :: (Arbol a) -> (Arbol a)
+mirror (Hoja a) = (Hoja a)
+mirror (Nodo a l r) = (Nodo a (mirror r) (mirror l))
+
 d) Demostrar la validez de la siguiente propiedad: mirror ◦ mirror = id
+
+Caso base Hoja a
+mirror (mirror (Hoja a))
+< mirror 1. >
+mirror (Hoja a)
+< mirror 1. >
+Hoja a
+
+Supongamos que P (mirror . mirror = id) se cumple para P(l) y P(r) (HI)
+
+Caso (Nodo a l r)
+
+mirror (mirror (Nodo a l r))
+< mirror 2. >
+mirror (Nodo a (mirror r) (mirror l))
+< HI >
+mirror (Nodo a r l)
+< mirror 2. >
+Nodo a (mirror l) (mirror r)
+< HI >
+Nodo a l r
+
 e) Considerando las siguientes funciones:
 hojas :: Arbol a → Int
 hojas (Hoja x ) = 1
 hojas (Nodo x t1 t2) = hojas t1 + hojas t2
+
+
 altura :: Arbol a → Int
 altura (Hoja x ) = 1
 altura (Nodo x t1 t2) = 1 + (altura t1 ‘max‘ altura t2)
-Demostrar que para todo ´arbol finito t se cumple que hojas t < 2^(altura t)
+
+Demostrar que para todo arbol finito t se cumple que hojas t < 2^(altura t)
+
+
+Caso base (Hoja a)
+
+hojas (Hoja a)
+< hojas 1. >
+1 < 2^(altura (Hoja a)) 
+< altura 1. >
+1 < 2^1 = 2
+
+Supongamos que P se cumple para P(l) y P(r)
+
+Caso (Nodo a l r)
+
+hojas (Nodo a l r)
+< hojas 2. >
+hojas (Nodo a l r) = hojas l + hojas r
+< HI >
+hojas l + hojas r < 2^(altura l) + 2^(altura r)
+< altura l es el max >
+hojas l + hojas r < 2^(altura l) + 2^(altura l) = 2*2^(altura l) = 2^(altura l + 1)
+< desaplicamos altura 2. >
+hojas l + hojas r < 2^(altura (Nodo a l r))
+
+Analogo si r es el max
+
+
+9. Dadas las siguientes definiciones:
+
+data AGTree a = Node a [AGTree a]
+ponerProfs n (Node x xs) = Node n (map (ponerProfs (n + 1)) xs)
+
+a) Definir una funcion alturaAGT que calcule la altura de un AGTree.
+
+[(Node a xs), (Node b ys)]
+
+maxNode :: [AGTree a] -> Int
+maxNode [] = 0
+maxNode ((Node a xs): ys) = a `max` maxNode ys
+
+alturaAGT :: AGTree a -> Int
+Node a [] = 1
+Node a xs = 1 + maxNode 
+
+b) Definir una funcion maxAGT que dado un AGTree de enteros devuelva su mayor elemento.
+c) Demostrar que alturaAGT = maxAGT ◦ ponerProfs 1
+
+
+10. Dadas las siguientes definiciones
+data Tree a = Leaf a | Node a (Tree a) (Tree a)
+
+flatten (Leaf x ) = [x ]
+flatten (Node x lt rt) = flatten lt ++ [x] ++ flatten rt
+
+mapTree f (Leaf x ) = Leaf (f x )
+mapTree f (Node x lt rt) = Node (f x ) (mapTree f lt) (mapTree f rt)
+
+demostrar que map f ◦ flatten = flatten ◦ mapTree f
+
+map f [] = []
+map f (x:xs) = (f x) : map f xs
+
+Caso base Leaf x
+
+map f (flatten (Leaf x))
+< flatten 1. >
+map f ([x])
+< map 2. >
+(f x) : map f []
+< map 1. >
+(f x) : []
+< : >
+[f x]
+< desaplicamos flatten 1. >
+flatten (Leaf (f x))
+< desaplicamos mapTree 1. >
+flatten (mapTree f (Leaf x))
+
+Caso Node x lt rt
+
+map f (flatten (Node x lt rt))
+< flatten 2. >
+map f (flatten lt ++ [x] ++ flatten rt)
+< asociatividad>
+map f ((flatten lt ++ [x]) ++ flatten rt)
+< Lema 1 : map f (xs ++ ys) = map f xs ++ map f ys >
+map f (flatten lt ++ [x]) ++ map f (flatten rt)
+< Lema 1 >
+map f (flatten lt) ++ map f [x] + map f (flatten rt)
+< map 2. >
+map f (flatten lt) ++ [f x] ++ map f (flatten rt)
+< HI >
+flatten (mapTree f lt) ++ [f x] ++ flatten (mapTree f rt)
+< desaplicamos flatten 2 >
+flatten (Node (f x) (mapTree f lt) (mapTree f rt))
+< desaplicamos mapTree 2>
+flatten (mapTree f (Node x lt rt))
+
+Lema 1. Queremos ver que map f (xs ++ ys) = map f xs ++ map f ys
+
+Caso base []
+
+map f ([] ++ ys)
+< ++ 1. >
+map f ys
+< desaplicamos ++ >
+[] ++ map f ys
+< desaplicamos map >
+map f [] ++ map f ys
+
+Caso (x:xs)
+
+map f ((x:xs) ++ ys)|
+< ++ 2. >
+map f (x : (xs ++ ys))
+< map 2. >
+(f x) : map f (xs ++ ys)
+< HI >
+(f x) : (map f xs ++ map f ys)
+< asociatividad >
+((f x) : map f xs) ++ map f ys
+< desaplicamos map >
+map f (x:xs) ++ map f ys
+
+
+
+11. Dada las siguientes definiciones
+join [] = []
+join (xs:xss) = xs ++ join xss
+
+singleton x = [x]
+
+Demostrar:
+a) id = join ◦ map singleton
+
+Caso base []
+
+id []
+< id >
+[]
+< desaplicamos join >
+join []
+< desaplicamos map >
+join (map singleton [])
+
+Caso (x:xs) ->  HI : join (map singleton xs) = id
+
+join (map singleton (x:xs))   
+< map 2. >
+join (singleton x : map singleton xs)
+< singleton >
+join ([x] : map singleton xs)
+< join 2. >
+[x] ++ join (map singleton xs)
+< HI >
+[x] ++ id xs
+< id >
+[x] ++ xs
+< ++ 2. >
+x : ([] ++ xs)
+< ++ 1. >
+(x:xs)
+< desaplicamos id >
+id (x:xs)
+
+
+
+b) join ◦ join = join ◦ map join
+
+Caso base []
+
+join (join [])
+< join 1. >
+join []
+< desaplicamos map >
+join (map join [])
+
+
+Caso (xs:xss)    -> HI : join (join xss) = join (map join xss)
+
+join (join (xs:xss))
+< join 2. >
+join (xs ++ join xss)
+< Lema 2: join (xs ++ ys) = join xs ++ join ys
+join xs ++ join (join xss)
+< HI >
+join xs ++ join (map join xss)
+< desaplicamos join 2. >
+join (join xs : map join xss)
+< desaplicamos map 2. >
+join (map join (xs:xss))
+
+
+12. Dadas las funciones insert :: Ord a ⇒ a → Bin a → Bin a, que agrega un elemento a un BST dado, y
+inorder :: Ord a ⇒ Bin a → [a ], que realiza un recorrido inorder sobre un BST, dadas en clase de teor´ıa, probar las
+siguientes propiedades sobre las funciones:
+
+a) Si t es un BST, entonces insert x t es un BST.
+b) Si t es un BST entonces inorder t es una lista ordenada.
+
+
+

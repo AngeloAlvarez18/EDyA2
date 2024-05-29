@@ -87,3 +87,33 @@ reverse ys ++ reverse xs ++ [x]
 < reverse 2. >
 reverse ys ++ reverse (x:xs)
 
+fmap :: (a -> b) -> [a] -> [b]
+fmap g [] = []
+fmap g (x:xs) = g x : fmap g xs
+
+Queremos ver que fmap (g . h) xs = fmap g (fmap h xs) (HI)
+
+Caso base
+
+fmap (g . h) []
+< fmap 1.>
+[]
+< desaplico g>
+fmap g []
+< desaplico h>
+fmap g (fmap h [])
+
+Caso inductivo
+
+fmap (g . h) (x:xs)
+< fmap 2.>
+(g . h) x : fmap (g . h) xs
+< aplicamos . >
+g (h x) : fmap (g . h) xs
+<HI>
+g (h x) : fmap g (fmap h xs)
+< desaplicamos fmap>
+fmap g (h x : fmap h xs)
+< desaplicamos fmap>
+fmap g (fmap h (x:xs))
+
