@@ -34,7 +34,7 @@ null <x1, ..., xn> = False en otro caso
 head <x1, ..., xn> = x1
 tail <x1, x2, ..., xn> = <x2, ..., xn>
 
-c) Asumiendo que A es un tipo con igualdad, especificar una funcion inL : List A → A → Bool tal que inL ls x =
+c) Asumiendo que A es un tipo con igualdad, especificar una funcion inL : List A -> A -> Bool tal que inL ls x =
 true si y solo si x es un elemento de ls.
 
 inL nil x = False
@@ -84,16 +84,16 @@ pop <x1, x2, ..., xn> = <x2, ..., xn> en otro caso
 tad Conjunto (A : Set) where
 import Bool
 vacıo : Conjunto A
-insertar : A → Conjunto A → Conjunto A
-borrar : A → Conjunto A → Conjunto A
-esVacıo : Conjunto A → Bool
-union : Conjunto A → Conjunto A → Conjunto A
-interseccion : Conjunto A → Conjunto A → Conjunto A
-resta : Conjunto A → Conjunto A → Conjunto A
+insertar : A -> Conjunto A -> Conjunto A
+borrar : A -> Conjunto A -> Conjunto A
+esVacıo : Conjunto A -> Bool
+union : Conjunto A -> Conjunto A -> Conjunto A
+interseccion : Conjunto A -> Conjunto A -> Conjunto A
+resta : Conjunto A -> Conjunto A -> Conjunto A
 insertar x (insertar x c) = insertar x c
 insertar x (insertar y c) = insertar y (insertar x c)
 ...
-¿Que pasarıa si se agregase una funcion choose : Conjunto A → A, tal que choose (insertar x c) = x ?
+¿Que pasarıa si se agregase una funcion choose : Conjunto A -> A, tal que choose (insertar x c) = x ?
 
 insertar x (insertar x c) = insertar x c
 insertar x (insertar y c) = insertar y (insertar x c)
@@ -198,9 +198,9 @@ size y expose:
 tad BalT (A : Ordered Set) where
 import Maybe
 empty : BalT A
-join : BalT A → Maybe A → BalT A → BalT A
-size : BalT A → N
-expose : BalT A → Maybe (BalT A, A, BalT A)
+join : BalT A -> Maybe A -> BalT A -> BalT A
+size : BalT A -> N
+expose : BalT A -> Maybe (BalT A, A, BalT A)
 • La operacion join toma un arbol L, un elemento opcional, y un arbol R. Si L y R son arboles de busqueda
 balanceados tales que todos los elementos de L sean menores que todos los elementos de R y el elemento
 opcional es mas grande que los de L y menor que los de R, entonces join crea un nuevo arbol de busqueda
@@ -220,11 +220,11 @@ expose (L n R) =
 
 
 6. Demostrar que (uncurry zip) ◦ unzip = id, siendo:
-zip :: [a] → [b] → [(a, b)]
+zip :: [a] -> [b] -> [(a, b)]
 zip [ ] ys = [ ]
 zip (x : xs) [ ] = [ ]
 zip (x : xs) (y : ys) = (x , y) : zip xs ys
-unzip :: [(a, b, )] → ([a ], [b ])
+unzip :: [(a, b, )] -> ([a ], [b ])
 unzip [ ] = ([ ], [ ])
 unzip ((x , y) : ps) = (x : xs, y : ys)
 where (xs, ys) = unzip ps
@@ -356,12 +356,12 @@ Nodo a (mirror l) (mirror r)
 Nodo a l r
 
 e) Considerando las siguientes funciones:
-hojas :: Arbol a → Int
+hojas :: Arbol a -> Int
 hojas (Hoja x ) = 1
 hojas (Nodo x t1 t2) = hojas t1 + hojas t2
 
 
-altura :: Arbol a → Int
+altura :: Arbol a -> Int
 altura (Hoja x ) = 1
 altura (Nodo x t1 t2) = 1 + (altura t1 ‘max‘ altura t2)
 
@@ -559,12 +559,73 @@ join (join xs : map join xss)
 join (map join (xs:xss))
 
 
-12. Dadas las funciones insert :: Ord a ⇒ a → Bin a → Bin a, que agrega un elemento a un BST dado, y
-inorder :: Ord a ⇒ Bin a → [a ], que realiza un recorrido inorder sobre un BST, dadas en clase de teor´ıa, probar las
+12. Dadas las funciones insert :: Ord a ⇒ a -> Bin a -> Bin a, que agrega un elemento a un BST dado, y
+inorder :: Ord a ⇒ Bin a -> [a], que realiza un recorrido inorder sobre un BST, dadas en clase de teorıa, probar las
 siguientes propiedades sobre las funciones:
 
 a) Si t es un BST, entonces insert x t es un BST.
 b) Si t es un BST entonces inorder t es una lista ordenada.
 
 
+data Bin a = Hoja | Nodo (Bin a) a (Bin a)
+
+inorder :: Bin a -> [a]
+inorder Hoja = []
+inorder (Nodo l a r) = inorder l ++ [a] ++ inorder r
+
+
+insert :: Ord a => a -> Bin a -> Bin a
+insert a Hoja = Nodo Hoja a Hoja
+insert a (Nodo l b r) | a <= b = Nodo (insert a l) b r
+                      | otherwise = Nodo l b (insert a r)
+
+
+a) Sea P(t) = insert x t es un BST, probaremos esta propiedad
+
+Para esto, definiremos la función isBST para chequear si el dato pasado es un BST
+
+isBST :: Bin a -> Bool
+isBST Hoja = True
+isBST (Nodo Hoja a Hoja) = True
+isBST (Nodo l a r) = isBST l && isBST r && (maxl l <= a) && (minl r > a)
+
+maxl (Nodo l a Hoja) = a
+maxl (Nodo l a r) = maxl r
+
+minl (Nodo Hoja a r) = a
+minl (Nodo l a r) = minl r
+
+Caso base t = Hoja
+insert x Hoja
+< insert 1. >
+Nodo Hoja x Hoja 
+< aplicamos isBST >
+isBST (Nodo Hoja x Hoja)
+< isBST 2. >
+True
+
+
+Caso recursivo t = Nodo l a r.
+Tomamos como HI que si l es un BST, entonces insert x l es un BST
+                       r es un BST, entonces insert x r es un BST
+
+Escribimos P en función de isBST
+
+entonces si isBST(t) entonces isBST(insert x t)
+
+isBST (insert x (Nodo l a r))
+< insert 2. >
+-- De aca sacamos 2 casos, x <= a ó x > a --
+< x <= a >
+isBST (Nodo (insert x l) a r)
+< isBST 3. >
+
+
+
+
+                  
+
+
+13. Dadas las definiciones de funciones que implementan leftist heaps, dadas en clase, probar que si l1 y l2 son
+leftist heaps, entonces merge l1 l2 es un leftist heap.
 
