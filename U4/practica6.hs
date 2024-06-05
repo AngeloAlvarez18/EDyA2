@@ -40,13 +40,24 @@ balance :: BTree a -> BTree a
 balance Empty = Empty 
 balance t@(Node _ Empty a Empty) = t
 balance (Node 3 Empty a (Node 2 Empty b r)) = Node 3 (Node 1 Empty a Empty) b r
-balance (Node 3 (Node 2 l b Empty) a Empty) = Node 3 (Node 1 Empty (value l) Empty) b 
+balance (Node 3 Empty a (Node 2 l b Empty)) = Node 3 l a (Node 1 Empty b Empty)
+balance (Node 3 (Node 2 l b Empty) a Empty) = Node 3 (Node 1 Empty (value l) Empty) b (Node 1 Empty a Empty)
+balance (Node 3 (Node 2 Empty b r) a Empty) = Node 3 (Node 1 Empty b Empty) (value r) (Node 1 Empty a Empty)
+
 
 iddd a = a
 
+tabulateAux :: (Int -> a) -> Int -> Int -> BTree a
+tabulateAux f n m | n == m = Node 1 Empty (f n) Empty
+                  | m < n = Empty
+                  | otherwise = let len = m - n + 1
+                                    a = len `div` 2
+                                    medio = m - a
+                                in Node len (tabulateAux f n (medio-1)) (f medio) (tabulateAux f (medio+1) m)
+
 tabulate :: (Int -> a) -> Int -> BTree a
 tabulate f 0 = Empty
-tabulate f n = let t = tabulate f (n-1)
-                   sl = size t
-                in Node (sl + 1) t (f sl) Empty
-
+tabulate f n = let x = n `div` 2
+                   l = tabulate f x
+                   r = tabulateAux f (x+1) (n-1)
+                in Node n l (f x) r
