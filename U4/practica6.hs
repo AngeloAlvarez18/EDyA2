@@ -12,8 +12,8 @@ size (Node sz _ _ _) = sz
 -- nth :: BTree a → Int → a, calcula el n-esimo elemento de una secuencia
 
 nth :: BTree a -> Int -> a
-nth (Node _ l x r) n | sl - 1 >= n = nth l n
-                     | sl     == n = x
+nth (Node _ l x r) n | sl > n = nth l n
+                     | sl == n = x
                      | otherwise = nth r (n - sl - 1)
                      where sl = size l
 
@@ -45,8 +45,6 @@ balance (Node 3 (Node 2 l b Empty) a Empty) = Node 3 (Node 1 Empty (value l) Emp
 balance (Node 3 (Node 2 Empty b r) a Empty) = Node 3 (Node 1 Empty b Empty) (value r) (Node 1 Empty a Empty)
 
 
-iddd a = a
-
 tabulateAux :: (Int -> a) -> Int -> Int -> BTree a
 tabulateAux f n m | n == m = Node 1 Empty (f n) Empty
                   | m < n = Empty
@@ -61,3 +59,37 @@ tabulate f n = let x = n `div` 2
                    l = tabulate f x
                    r = tabulateAux f (x+1) (n-1)
                 in Node n l (f x) r
+
+-- map :: (a → b) → BTree a → BTree b, la cual dada una funcion f y una secuencia s, devuelve el resultado de
+-- aplicar f sobre cada elemento de s.
+
+mapT :: (a -> b) -> BTree a -> BTree b
+mapT f Empty = Empty
+mapT f (Node n l a r) = let lr = mapT f l
+                            rr = mapT f r
+                        in (Node n lr (f a) rr)
+
+
+-- take :: Int → BTree a → BTree a, tal que dados un entero n y una secuencia s devuelve los primeros n
+-- elementos de s.
+
+takeT :: Int -> BTree a -> BTree a
+takeT n Empty = Empty
+takeT n t@(Node m l a r) | n > m = t
+                        | n == sl + 1 = (Node (m - sr) l a Empty)
+                        | n <= sl = takeT n l
+                        | otherwise = Node n l a (takeT (n - (sl + 1)) r)
+                        where sl = size l 
+                              sr = size r
+
+
+-- drop :: Int → BTree a → BTree a, tal que dados un entero n y una secuencia s devuelve la secuencia s sin los
+-- primeros n elementos.
+
+dropT :: Int -> BTree a -> BTree a
+dropT n Empty = Empty
+dropT n (Node m l a r) | n >= m = Empty
+                      | n == sl + 1 = r
+                      | n < sl = (Node (m-n) (dropT n l) a r)
+                      | otherwise = dropT (m-n) r
+                      where sl = size l
