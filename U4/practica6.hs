@@ -88,8 +88,11 @@ takeT n t@(Node m l a r) | n > m = t
 
 dropT :: Int -> BTree a -> BTree a
 dropT n Empty = Empty
-dropT n (Node m l a r) | n >= m = Empty
-                      | n == sl + 1 = r
-                      | n < sl = (Node (m-n) (dropT n l) a r)
-                      | otherwise = dropT (m-n) r
-                      where sl = size l
+dropT 0 t = t
+dropT n (Node m l a r) | n == m = Empty
+                       | n == sl = Node (m-n) Empty a r
+                       | n == (sl+1) = r
+                       | n < sl = Node (m-n) (dropT n l) a r
+                       | otherwise = dropT (n -(sl+1)) r
+                        where sl = size l
+
