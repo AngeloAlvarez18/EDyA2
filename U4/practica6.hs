@@ -96,3 +96,35 @@ dropT n (Node m l a r) | n == m = Empty
                        | otherwise = dropT (n -(sl+1)) r
                         where sl = size l
 
+-- 2. El problema de calcular la maxima suma de una subsecuencia contigua de una secuencia dada s puede resolverse
+-- con un algoritmo “Divide & Conquer” que en cada llamada recursiva calcule: la maxima suma de una subsecuencia
+-- contigua de s, la maxima suma de un prefijo de s, la maxima suma de un sufijo de s y la suma de todos los elementos
+-- de s. Dado el siguiente tipo de datos:
+
+data Tree a = E | Leaf a | Join (Tree a) (Tree a) deriving Show
+
+-- a) Definir una funcion mcss :: (Num a, Ord a) ⇒ Tree a → a, que calcule la maxima suma de una subsecuencia
+-- contigua de una secuencia dada, en terminos de mapreduce.
+-- Ayuda: Dado un arbol t, mcss aplica la funcion reduce sobre el arbol que se obtiene al reemplazar cada
+-- elemento v por la 4-tupla (max (v, 0), max (v, 0), max (v, 0), v).
+
+tuple :: (Num a, Ord a) => a -> (a, a, a, a)
+tuple a = let a' = a `max` 0 
+            in (a', a', a', a)
+
+combineTuple :: (Num a, Ord a) => (a, a, a, a) -> (a, a, a, a) -> (a, a, a, a)
+combineTuple (m, p, s, t) (m', p', s', t') = (max (s + p') (max m m'),
+                                            max p (t+p'),
+                                            max s' (s+t'),
+                                            t + t')
+
+mapReduce :: (Num a, Ord a) => (a -> b) -> (b -> b -> b) -> b -> Tree a -> b
+mapReduce f g e E = e
+mapReduce f g e (Leaf a) = f a
+mapReduce f g e (Join l r) = let l' = mapReduce f g e l
+                                 r' = mapReduce f g e r
+                            in g l' r'
+
+mcss :: (Num a, Ord a) => Tree a -> a
+mcss t = let (a,b,c,d) = mapReduce tuple combineTuple (0,0,0,0) t
+        in a
