@@ -128,3 +128,84 @@ mapReduce f g e (Join l r) = let l' = mapReduce f g e l
 mcss :: (Num a, Ord a) => Tree a -> a
 mcss t = let (a,b,c,d) = mapReduce tuple combineTuple (0,0,0,0) t
         in a
+
+-- • sufijos:: Tree Int → Tree (Tree Int), tal que dado un arbol t construye otro con los sufijos de cada elemento de
+-- t
+
+sufijos :: Tree Int -> Tree (Tree Int)
+sufijos t = fst (aux t E)
+  where
+    aux :: Tree Int -> Tree Int -> (Tree (Tree Int), Tree Int)
+    aux E t = (E, t)
+    aux (Leaf x) E = (Leaf E, Leaf x)
+    aux (Leaf x) t =(Leaf t, Join (Leaf x) t)      
+    aux (Join l r) t = (Join l' r', r1)
+      where
+        (r', r2) = aux r t
+        (l', r1) = aux l r2
+
+-- conSufijos :: Tree Int → Tree (Int,Tree Int), la cual dado un arbol t reemplaza cada elemento v de t por el par
+-- (v, sufijos de v en t).
+
+conSufijos :: Tree Int -> Tree (Int, Tree Int)
+conSufijos t = fst (aux2 t E)
+  where 
+    aux2 :: Tree a -> Tree a -> (Tree (a, Tree a), Tree a)
+    aux2 E t = (E, t)
+    aux2 (Leaf a) E = (Leaf (a, E), Leaf a)
+    aux2 (Leaf a) t = (Leaf (a, t), Join (Leaf a) t)
+    aux2 (Join l r) t = (Join l' r', r1)
+      where 
+        (r', r2) = aux2 r t
+        (l', r1) = aux2 l r2
+
+
+
+-- maxT :: Tree Int → Int, la cual calcula el maximo elemento de un arbol de enteros. Definir maxT en terminos
+-- de reduce
+
+reduceT :: (a -> a -> a) -> a -> Tree a -> a
+reduceT f e E = e
+reduceT f e (Leaf a) = a
+reduceT f e (Join l r) = let 
+                          lr = reduceT f e l
+                          rr = reduceT f e r
+                        in f lr rr
+
+maxT :: Tree Int -> Int
+maxT t = reduceT max 0 t
+
+
+-- maxAll :: Tree (Tree Int) → Int, calcula el maximo elemento de en arbol de arboles de enteros. Definir maxAll
+-- en terminos de mapreduce.
+
+mapReduce2 :: (a -> b) -> (b -> b -> b) -> b -> Tree a -> b
+mapReduce2 f g e E = e
+mapReduce2 f g e (Leaf a) = f a
+mapReduce2 f g e (Join l r) = let 
+  l' = mapReduce2 f g e l
+  r' = mapReduce2 f g e r
+                            in g l' r'
+
+maxAll :: Tree (Tree Int) -> Int
+maxAll t = mapReduce2 maxT max 0 t
+
+mapTr :: (a -> b) -> Tree a -> Tree b
+mapTr f E = E
+mapTr f (Leaf a) = Leaf (f a)
+mapTr f (Join l r) = let 
+                          lr = mapTr f l
+                          rr = mapTr f r
+                        in Join lr rr
+
+
+mejorGanancia :: Tree Int -> Int
+mejorGanancia t =
+  let 
+    sufijos = conSufijos t
+    t' = mapTr aux3 sufijos
+      where
+        aux3 :: (Int, Tree Int) -> Tree Int
+        aux3 (n, t) = mapTr (\x -> x - n) t
+  in maxAll t'
+
