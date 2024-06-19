@@ -14,4 +14,3 @@ promedios s = tabulate f ((length s))
                           f i = (fromIntegral (nth i s')) / (fromIntegral (i+1))
 
 
-    
